@@ -125,6 +125,10 @@
     max-height: 70vh;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    /* 让每个单元格用自身 aspect-ratio 决定高度，不被行的 stretch 拉伸/压缩；
+       align-items:start 配合 aspect-ratio 可避免某些移动端行高塌缩、图片叠压 */
+    grid-auto-rows: auto;
+    align-items: start;
     gap: 12px;
 }
 
@@ -144,6 +148,27 @@
     overflow: hidden;
     border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.12));
     background: rgba(0, 0, 0, 0.2);
+    /* 防止 flex/grid 上下文里被压扁 */
+    min-width: 0;
+    min-height: 0;
+}
+
+/* aspect-ratio 兜底：不支持 aspect-ratio 的（老版移动端 WebKit）浏览器
+   用 padding-top 撑出正方形，避免行高塌缩导致下方图片叠到上面 */
+@supports not (aspect-ratio: 1 / 1) {
+    .pap-cell {
+        aspect-ratio: auto;
+        height: 0;
+        padding-top: 100%;
+    }
+    .pap-cell img,
+    .pap-cell .pap-del {
+        position: absolute;
+    }
+    .pap-cell img {
+        top: 0;
+        left: 0;
+    }
 }
 
 .pap-cell img {

@@ -339,9 +339,14 @@
 
         // 优先：插到「复制人设」按钮前面（= 位于「更改人设图」与「复制人设」之间）
         if (dupBtn && dupBtn.parentElement) {
-            // 若按钮已经正好在 dupBtn 前面，不重复操作
-            if (btn.nextElementSibling !== dupBtn || btn.parentElement !== dupBtn.parentElement) {
+            // 强制：只要按钮不是正好排在 dupBtn 前一个兄弟，就移动过去。
+            // 用 previousElementSibling 判断更直观：dupBtn 的前一个应当是本按钮。
+            if (dupBtn.previousElementSibling !== btn) {
                 dupBtn.parentElement.insertBefore(btn, dupBtn);
+                if (!injectButton._logged) {
+                    console.log('[PersonaAvatarPool] 按钮已移动到「复制人设」之前 (v2)');
+                    injectButton._logged = true;
+                }
             }
             return true;
         }
