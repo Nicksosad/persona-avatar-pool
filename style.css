@@ -125,11 +125,19 @@
     max-height: 70vh;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    /* 让每个单元格用自身 aspect-ratio 决定高度，不被行的 stretch 拉伸/压缩；
-       align-items:start 配合 aspect-ratio 可避免某些移动端行高塌缩、图片叠压 */
+    /* 单元格高度由内部 padding-top 撑出（见 .pap-cell），不依赖 aspect-ratio，
+       因此行高不会塌缩、图片不会叠压；align-items:start 防止行被拉伸 */
     grid-auto-rows: auto;
     align-items: start;
     gap: 12px;
+}
+
+/* 极窄屏（小屏手机竖屏）下缩小最小列宽，保证至少能正常排两到三列且不挤压 */
+@media (max-width: 420px) {
+    .pap-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+    }
 }
 
 .pap-empty {
@@ -140,10 +148,15 @@
     font-size: 0.9em;
 }
 
-/* 单张图 */
+/* 单张图
+   高度统一用 padding-top:100% 撑出正方形（不用 aspect-ratio）。
+   原因：部分 iOS Safari 在 grid + 1fr 列宽下对 aspect-ratio 计算高度失败，
+   且会被 @supports 误判为“支持”，导致行高塌缩、图片相互叠压（折叠）。
+   padding 撑高 + 图片绝对定位填满，是对所有 iOS 版本都稳定的方案。 */
 .pap-cell {
     position: relative;
-    aspect-ratio: 1 / 1;
+    height: 0;
+    padding-top: 100%;
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.12));
@@ -153,25 +166,10 @@
     min-height: 0;
 }
 
-/* aspect-ratio 兜底：不支持 aspect-ratio 的（老版移动端 WebKit）浏览器
-   用 padding-top 撑出正方形，避免行高塌缩导致下方图片叠到上面 */
-@supports not (aspect-ratio: 1 / 1) {
-    .pap-cell {
-        aspect-ratio: auto;
-        height: 0;
-        padding-top: 100%;
-    }
-    .pap-cell img,
-    .pap-cell .pap-del {
-        position: absolute;
-    }
-    .pap-cell img {
-        top: 0;
-        left: 0;
-    }
-}
-
 .pap-cell img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
