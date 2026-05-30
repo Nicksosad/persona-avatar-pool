@@ -1,0 +1,10 @@
+{
+    "display_name": "Persona Avatar Pool",
+    "loading_order": 100,
+    "js": "index.js",
+    "css": "style.css",
+    "author": "404notnick",
+    "version": "1.0.0",
+    "description": "给每个 persona 配置一个头像库，每次该用户发言时随机抽取一张作为这条消息的头像。",
+    "homePage": ""
+}

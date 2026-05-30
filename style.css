@@ -1,0 +1,360 @@
+/* Persona Avatar Pool - 弹窗样式 */
+
+/* 遮罩层（仅负责变暗 + 拦截点击，不负责居中） */
+.pap-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* 弹窗主体：fixed + 四边定位 + margin:auto 居中。
+   不用 transform 居中，因为酒馆可能在 body/容器上加 filter/transform，
+   会让 transform 定位的 fixed 元素相对该祖先而非视口，导致偏上。
+   margin:auto 居中方案对 filter 祖先免疫。 */
+.pap-box {
+    position: fixed !important;
+    /* top/left/right/bottom/margin/transform 不加 !important，
+       因为这些由 index.js 的 centerFixedBox() 用内联样式实测居中后覆盖 */
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    width: min(720px, 92vw) !important;
+    height: -moz-fit-content;
+    height: fit-content !important;
+    max-height: 88vh !important;
+    margin: 0;
+    z-index: 100001 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--SmartThemeBlurTintColor, var(--black70a, #1e1e1e));
+    color: var(--SmartThemeBodyColor, #e0e0e0);
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.15));
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+    box-sizing: border-box !important;
+}
+
+/* 头部 */
+.pap-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.12));
+}
+
+.pap-title {
+    font-size: 1.05em;
+    font-weight: 600;
+}
+
+.pap-close {
+    cursor: pointer;
+    font-size: 1.5em;
+    line-height: 1;
+    padding: 0 6px;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+.pap-close:hover {
+    opacity: 1;
+}
+
+/* 工具栏 */
+.pap-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px 6px;
+    flex-wrap: wrap;
+}
+
+.pap-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pap-switch input {
+    cursor: pointer;
+}
+
+.pap-add-btn {
+    cursor: pointer;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    width: auto;
+    writing-mode: horizontal-tb;
+    word-break: keep-all;
+}
+
+.pap-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* 提示文字 */
+.pap-hint {
+    padding: 2px 16px 10px;
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+/* 网格 */
+.pap-grid {
+    padding: 8px 16px 16px;
+    overflow-y: auto;
+    /* 限制网格自身高度，保证整个弹窗不超出视口（配合 overlay 的 4vh padding） */
+    max-height: 70vh;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+}
+
+.pap-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 30px 10px;
+    opacity: 0.6;
+    font-size: 0.9em;
+}
+
+/* 单张图 */
+.pap-cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.12));
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.pap-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+}
+
+/* 删除按钮 */
+.pap-del {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ff6b6b;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+    font-size: 0.85em;
+}
+
+.pap-cell:hover .pap-del {
+    opacity: 1;
+}
+
+.pap-del:hover {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+/* 注入按钮的微调（继承 menu_button 样式，仅保证可点） */
+#pap_open_button {
+    cursor: pointer;
+}
+
+/* 自建确认弹窗：z-index 必须高于头像库弹窗(100000)，否则会被盖住点不到 */
+.pap-confirm-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100010 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+.pap-confirm-box {
+    position: fixed !important;
+    /* top/left/margin/transform 由 index.js centerFixedBox() 内联覆盖 */
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    width: min(420px, 90vw) !important;
+    height: -moz-fit-content;
+    height: fit-content !important;
+    max-height: 88vh !important;
+    margin: 0;
+    z-index: 100011 !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    background: var(--SmartThemeBlurTintColor, var(--black70a, #1e1e1e));
+    color: var(--SmartThemeBodyColor, #e0e0e0);
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.18));
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    padding: 18px;
+}
+
+.pap-confirm-msg {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    font-size: 0.92em;
+}
+
+.pap-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.pap-confirm-actions .menu_button {
+    cursor: pointer;
+    min-width: 64px;
+}
+
+.pap-confirm-ok {
+    color: #ff6b6b;
+}
+
+/* ---------------------------------------------------------
+   放大查看（lightbox）
+   z-index 高于头像库弹窗(100001)，覆盖全屏展示原图。
+   居中不靠 flex/margin（<html> 的 transform/perspective 会让 fixed 包含块失效），
+   而是由 index.js 的 centerFixedBox() 对 .pap-viewer-content 实测像素居中。
+   --------------------------------------------------------- */
+.pap-viewer-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100020 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    cursor: zoom-out;
+}
+
+/* 居中容器：fixed，top/left 由 centerFixedBox() 内联实测覆盖 */
+.pap-viewer-content {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    margin: 0;
+    z-index: 100021 !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box !important;
+    cursor: default;
+}
+
+.pap-viewer-img {
+    max-width: 92vw;
+    max-height: 84vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.pap-viewer-caption {
+    margin-top: 12px;
+    max-width: 92vw;
+    color: #e0e0e0;
+    font-size: 0.85em;
+    opacity: 0.85;
+    text-align: center;
+    word-break: break-all;
+}
+
+.pap-viewer-close {
+    position: fixed;
+    /* top/left 由 index.js placeFixedBox() 内联实测设置（坏 fixed 包含块补偿） */
+    top: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 1.3em;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.pap-viewer-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+/* 翻页箭头：固定在视口左右两侧、垂直居中。
+   注意：top/left 由 index.js 实测像素内联设置，
+   不用 top:50%+translateY（<html> transform/perspective 会让其飞走）。 */
+.pap-viewer-nav {
+    position: fixed;
+    top: 0;
+    transform: none;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 1.25em;
+    cursor: pointer;
+    opacity: 0.8;
+    z-index: 100022 !important;
+    transition: opacity 0.15s, background 0.15s;
+    user-select: none;
+}
+
+.pap-viewer-nav:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.85);
+}
