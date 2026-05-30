@@ -317,27 +317,41 @@
     // UI：在 persona 控制区的 buttons_block 注入按钮
     // ---------------------------------------------------------
     function injectButton() {
-        const block = document.querySelector('.persona_controls_buttons_block.buttons_block')
-            || document.querySelector('.persona_controls_buttons_block')
-            || document.querySelector('.buttons_block');
-        if (!block) return false;
-        if (document.getElementById(BTN_ID)) return true; // 已存在
+        // 目标：把头像库按钮放在「更改人设图」(persona_set_image_button) 与
+        // 「复制人设」(persona_duplicate_button) 之间。
+        // 关键点：不假设这两个按钮在哪个容器里，直接全局定位「复制人设」按钮，
+        // 用它“真实的父元素”作为插入容器，插到它前面即可。
+        const dupBtn = document.getElementById('persona_duplicate_button');
 
-        const btn = document.createElement('div');
-        btn.id = BTN_ID;
-        // 复用酒馆原生按钮样式
-        btn.className = 'menu_button fa-solid fa-images interactable';
-        btn.title = '头像库（随机头像）';
-        btn.setAttribute('tabindex', '0');
-        btn.setAttribute('role', 'button');
-        btn.addEventListener('click', openPopup);
+        let btn = document.getElementById(BTN_ID);
 
-        // 插到「复制人设」按钮之前 —— 即位于「更改人设图」与「复制人设」之间。
-        // 取不到目标按钮时回退到追加到末尾。
-        const dupBtn = block.querySelector('#persona_duplicate_button');
-        if (dupBtn) {
-            block.insertBefore(btn, dupBtn);
-        } else {
+        // 还没创建过：新建按钮
+        if (!btn) {
+            btn = document.createElement('div');
+            btn.id = BTN_ID;
+            // 复用酒馆原生按钮样式
+            btn.className = 'menu_button fa-solid fa-images interactable';
+            btn.title = '头像库（随机头像）';
+            btn.setAttribute('tabindex', '0');
+            btn.setAttribute('role', 'button');
+            btn.addEventListener('click', openPopup);
+        }
+
+        // 优先：插到「复制人设」按钮前面（= 位于「更改人设图」与「复制人设」之间）
+        if (dupBtn && dupBtn.parentElement) {
+            // 若按钮已经正好在 dupBtn 前面，不重复操作
+            if (btn.nextElementSibling !== dupBtn || btn.parentElement !== dupBtn.parentElement) {
+                dupBtn.parentElement.insertBefore(btn, dupBtn);
+            }
+            return true;
+        }
+
+        // 回退：找不到「复制人设」按钮时，退回到 persona 控制区 block 末尾
+        if (!btn.isConnected) {
+            const block = document.querySelector('.persona_controls_buttons_block.buttons_block')
+                || document.querySelector('.persona_controls_buttons_block')
+                || document.querySelector('.buttons_block');
+            if (!block) return false;
             block.appendChild(btn);
         }
         return true;
